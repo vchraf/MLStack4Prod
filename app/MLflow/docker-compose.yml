@@ -1,6 +1,6 @@
 version: '3'
 services:
-  s3:
+  minios3:
     image: minio/minio:latest
     ports:
       - 9000:9000
@@ -12,6 +12,24 @@ services:
       - s3_volume:/data
     command: server /data --console-address ':9001' --address ':9000'
     restart: unless-stopped
+  mc:
+    image: minio/mc:latest
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=s3MinIOadmin
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=mlflow_db
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc config host add minio http://minios3:9000 admin s3MinIOadmin;
+      /usr/bin/mc rm -r --force minio/mlflow;
+      /usr/bin/mc mb minio/mlflow;
+      /usr/bin/mc policy download minio/mlflow;
+      exit 0;
+      "
+    depends_on:
+        - minios3
   postgres:
     image: postgres
     ports:
@@ -26,11 +44,12 @@ services:
   mlflow:
     depends_on:
       - postgres
+      - mc
     build: .
     ports:
       - 5000:5000
     environment:
-      - MLFLOW_S3_ENDPOINT_URL=http://s3:9000
+      - MLFLOW_S3_ENDPOINT_URL=http://minios3:9000
       - AWS_ACCESS_KEY_ID=admin
       - AWS_SECRET_ACCESS_KEY=s3MinIOadmin
     command: mlflow server --backend-store-uri postgresql://admin:admin@postgres:5432/mlflow_db --default-artifact-root s3://mlflow/ --host 0.0.0.0 --port 5000
