@@ -87,7 +87,7 @@ metadata:
 spec:
   containers:
   - name: mc
-    image: mini o/mc:latest
+    image: minio/mc:latest
     command: ["/bin/sh"]
     args: ["-c","/usr/bin/mc config host add minio http://mlflow-minio-console-service-np admin s3MinIOadmin;
                 /usr/bin/mc rm -r --force minio/mlflow;
