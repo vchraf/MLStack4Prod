@@ -1,0 +1,100 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mlflow-minio-storage-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi   
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlflow-minio-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      tag: mlflow-minio
+  template:
+    metadata:
+      labels:
+        tag: mlflow-minio
+    spec:
+      volumes:
+        - name: mlflow-minio-storage
+          persistentVolumeClaim:
+            claimName: mlflow-minio-storage-pvc
+      containers:
+        - name: minios3
+          image: minio/minio:latest
+          args:
+          - server
+          - /data
+          - "--console-address" 
+          - ":9001"
+          - "--address" 
+          - ":9000"
+          resources:
+            limits:
+              memory: "250Mi"
+              cpu: "500m"
+          ports:
+          - containerPort: 9000
+          - containerPort: 9001
+          env:
+            - name: MINIO_ROOT_USER
+              value: admin
+            - name: MINIO_ROOT_PASSWORD
+              value: s3MinIOadmin
+          volumeMounts:
+            - name: mlflow-minio-storage
+              mountPath: '/data' 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mlflow-minio-service-np
+spec:
+  type: NodePort
+  selector:
+    tag: mlflow-minio
+  ports:
+  - port: 9000
+    targetPort: 9000
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mlflow-minio-console-service-np
+spec:
+  type: NodePort
+  selector:
+    tag: mlflow-minio
+  ports:
+  - port: 9000
+    targetPort: 9000
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mlflow-minio-mc-pod
+  labels:
+    tag: minio-mc
+spec:
+  containers:
+  - name: mc
+    image: mini o/mc:latest
+    command: ["/bin/sh"]
+    args: ["-c","/usr/bin/mc config host add minio http://mlflow-minio-console-service-np admin s3MinIOadmin;
+                /usr/bin/mc rm -r --force minio/mlflow;
+                /usr/bin/mc mb minio/mlflow;
+                /usr/bin/mc policy download minio/mlflow;
+                exit 0;"]
+    resources:
+      limits:
+        memory: "128Mi"
+        cpu: "500m"

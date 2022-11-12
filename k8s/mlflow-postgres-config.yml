@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mlflow-postgres-storage-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlflow-postgres-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      tag: mlflow-postgres
+  template:
+    metadata:
+      labels:
+        tag: mlflow-postgres 
+    spec:
+      volumes:
+        - name: mlflow-postgres-storage
+          persistentVolumeClaim:
+            claimName: mlflow-postgres-storage-pvc
+      containers:
+        - name: mlflow-postgres
+          image: postgres
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: mlflow-postgres-storage
+              mountPath: /var/lib/postgresql/data
+              subPath: postgres
+          resources:
+            limits:
+              memory: '1Gi'
+              cpu: '1'
+            requests:
+              memory: "0.5Gi"
+              cpu: "200m"
+          env:
+            - name: POSTGRES_USER
+              value: admin
+            - name: POSTGRES_PASSWORD
+              value: admin
+            - name: POSTGRES_DB
+              value: mlflow_db
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mlflow-postgres-clusterip
+spec:
+  type: ClusterIP
+  selector:
+    tag: mlflow-postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+
