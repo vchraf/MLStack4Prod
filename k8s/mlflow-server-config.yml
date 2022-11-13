@@ -15,13 +15,8 @@ spec:
       containers:
         - name: mlflow-server
           image: vchraf/mlflow-server:v2
-          args:
-          - --host=0.0.0.0
-          - --port=5775
-          - --backend-store-uri postgresql://admin:admin@x.x.x.x:5432/mlflow_db
-          - --default-artifact-root s3://mlflow/
-          - --workers=1
-          port:
+          args: ["--backend-store-uri","postgresql://admin:admin@x.x.x.x:5432/mlflow_db","--default-artifact-root","s3://mlflow/","--host","0.0.0.0","--port","5000","--workers=1"]
+          ports:
             - containerPort: 5775
           resources:
             limits:
