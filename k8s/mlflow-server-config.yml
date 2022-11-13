@@ -18,6 +18,18 @@ spec:
           args: ["--backend-store-uri","postgresql://admin:admin@x.x.x.x:5432/mlflow_db","--default-artifact-root","s3://mlflow/","--host","0.0.0.0","--port","5775","--workers=1"]
           ports:
             - containerPort: 5775
+          readinessProbe:
+            httpGet:
+              path: "/health-check"
+              port: 5775
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: "/health-check"
+              port: 5775
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
           resources:
             limits:
               memory: 512Mi
