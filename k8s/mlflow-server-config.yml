@@ -15,7 +15,7 @@ spec:
       containers:
         - name: mlflow-server
           image: vchraf/mlflow-server:v2
-          args: ["--backend-store-uri","postgresql://admin:admin@x.x.x.x:5432/mlflow_db","--default-artifact-root","s3://mlflow/","--host","0.0.0.0","--port","5775","--workers=1"]
+          args: ["--backend-store-uri","postgresql://admin:admin@mlflow-postgres-clusterip:5432/mlflow_db","--default-artifact-root","s3://mlflow/","--host","0.0.0.0","--port","5775","--workers=1"]
           ports:
             - containerPort: 5775
               name: http
@@ -38,7 +38,7 @@ spec:
               cpu: "0.2"
           env:
             - name: MLFLOW_S3_ENDPOINT_URL
-              value: http://x.x.x.x:9000
+              value: http://mlflow-minio-service-np:9000
             - name: AWS_ACCESS_KEY_ID
               value: admin
             - name: AWS_SECRET_ACCESS_KEY
@@ -53,5 +53,7 @@ spec:
   selector:
     tag: mlflow-server
   ports:
-    - port: 5775
-      targetPort: 5775
+  - name: http
+    port: 5775
+    protocol: TCP
+    targetPort: 5775
