@@ -38,7 +38,7 @@ spec:
               cpu: "0.2"
           env:
             - name: MLFLOW_S3_ENDPOINT_URL
-              value: http://mlflow-minio-service-np:9000
+              value: http://mlflow-minio-service-clusterip:9000
             - name: AWS_ACCESS_KEY_ID
               value: admin
             - name: AWS_SECRET_ACCESS_KEY
