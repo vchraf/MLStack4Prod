@@ -43,9 +43,20 @@ spec:
               cpu: "500m"
           ports:
           - containerPort: 9000
+            name: http1
             protocol: TCP
           - containerPort: 9001
+            name: http2
             protocol: TCP
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: http1
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
           env:
             - name: MINIO_ROOT_USER
               value: admin
@@ -64,7 +75,8 @@ spec:
   selector:
     tag: mlflow-minio
   ports:
-  - port: 9000
+  - name: http1
+    port: 9000
     targetPort: 9000
     protocol: TCP
 
@@ -78,7 +90,8 @@ spec:
   selector:
     tag: mlflow-minio
   ports:
-  - port: 9001
+  - name: http2
+    port: 9001
     targetPort: 9001
     protocol: TCP
 
