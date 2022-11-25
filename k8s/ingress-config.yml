@@ -11,7 +11,7 @@ spec:
   rules:
     - http:
         paths:
-          - path: /
+          - path: /mlflow
             pathType: Prefix
             backend:
               service:
@@ -22,7 +22,13 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: mlflow-minio-service-np
+                name: mlflow-minio-service-clusterip
                 port: 
                   number: 9000
-
+          - path: /console
+            pathType: Prefix
+            backend:
+              service:
+                name: mlflow-minio-console-service-clusterip
+                port: 
+                  number: 9001

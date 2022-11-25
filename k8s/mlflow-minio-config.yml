@@ -58,9 +58,9 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: mlflow-minio-service-np
+  name: mlflow-minio-service-clusterip
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     tag: mlflow-minio
   ports:
@@ -72,9 +72,9 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: mlflow-minio-console-service-np
+  name: mlflow-minio-console-service-clusterip
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     tag: mlflow-minio
   ports:
@@ -94,7 +94,7 @@ spec:
   - name: mc
     image: minio/mc:latest
     command: ["/bin/sh"]
-    args: ["-c","/usr/bin/mc config host add minio http://mlflow-minio-console-service-np admin s3MinIOadmin;
+    args: ["-c","/usr/bin/mc config host add minio http://mlflow-minio-console-service-clusterip admin s3MinIOadmin;
                 /usr/bin/mc rm -r --force minio/mlflow;
                 /usr/bin/mc mb minio/mlflow;
                 /usr/bin/mc policy download minio/mlflow;
