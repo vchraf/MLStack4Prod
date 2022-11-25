@@ -43,7 +43,9 @@ spec:
               cpu: "500m"
           ports:
           - containerPort: 9000
+            protocol: TCP
           - containerPort: 9001
+            protocol: TCP
           env:
             - name: MINIO_ROOT_USER
               value: admin
@@ -64,6 +66,7 @@ spec:
   ports:
   - port: 9000
     targetPort: 9000
+    protocol: TCP
 
 ---
 apiVersion: v1
@@ -75,8 +78,10 @@ spec:
   selector:
     tag: mlflow-minio
   ports:
-  - port: 9000
-    targetPort: 9000
+  - port: 9001
+    targetPort: 9001
+    protocol: TCP
+
 ---
 apiVersion: v1
 kind: Pod
