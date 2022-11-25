@@ -23,7 +23,7 @@ spec:
           livenessProbe:
             failureThreshold: 3
             httpGet:
-              path: /
+              path: /mlflow
               port: http
               scheme: HTTP
             periodSeconds: 10
